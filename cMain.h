@@ -1,9 +1,10 @@
 #pragma once
 
 #include "wx/wx.h"
+#include <string>
 
-#define defaultWidth 4  
-#define defaultHeight 3  
+#define defaultWidth 4 
+#define defaultHeight 3 
 
 class cMain : public wxFrame
 {
@@ -21,6 +22,12 @@ public:
 	bool bFirstClick = true; //that first click doesnt explode
 	int* mineloc = nullptr;
 	int minecount = 0;
+	std::string name="Unnamed";
+	int defaultMines=2;
+	
+	wxPanel *panel;
+	wxStaticText *timerText;
+	
 	
 	void OnButtonClicked(wxCommandEvent &evt);  //what to do if clicked
 	void rclick(wxMouseEvent &evt);
