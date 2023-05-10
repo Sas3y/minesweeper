@@ -3,11 +3,17 @@
 <p>Base is from [bharatr](https://github.com/bharatr1993/WxWidgets-Minesweeper), who copied from [javid9](https://www.youtube.com/@javidx9) (but did implement useful, yet buggy, aspects)</p>
 
 ### TODO:
-<p>--Timer<br>
--Reset<br>
--Bot<br>
---Input (for board)<br>
-And much more :)</p>
+<p>-Working buttons:<br>
+	-Reset<br>
+	-Highscores<br>
+--Timer<br>
+---Input (for board) (console temporary or permanent?)<br>
+Bot (decide which variant)<br>
+Bugfixxing<br>
+!Devide to multiple files<br><br>
+?Click to reveal on number<br>
+?Reveal surrounding 0's (no manual clicks)<br>
+?Endgame screen</p>
 
 ### Extra details
 <p>b.sh for easier compilation<br>
