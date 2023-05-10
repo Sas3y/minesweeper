@@ -5,8 +5,8 @@
 ### TODO:
 <p>-Working buttons:<br>
 	-Reset<br>
-	-Highscores<br>
---Timer<br>
+	-Highscores(+include mine amount)<br>
+--Timer(+reset when reset)<br>
 ---Input (for board) (console temporary or permanent?)<br>
 Bot (decide which variant)<br>
 Bugfixxing<br>
