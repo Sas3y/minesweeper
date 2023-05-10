@@ -6,11 +6,11 @@
 <p>-Working buttons:<br>
 	-Reset<br>
 	-Highscores(+include mine amount)<br>
---Timer(+reset when reset)<br>
 ---Input (for board) (console temporary or permanent?)<br>
+--Timer(+reset when reset)<br>
 Bot (decide which variant)<br>
-Bugfixxing<br>
-!Devide to multiple files<br><br>
+Bugfixing<br>
+!Divide into multiple files<br><br>
 ?Click to reveal on number<br>
 ?Reveal surrounding 0's (no manual clicks)<br>
 ?Endgame screen</p>
