@@ -5,11 +5,12 @@
 //dont confuse minecount with mine_count
 
 //gameplay bug: set minecount to 0 and press any (even flagged) tile to win
+//reset time for highscores
 
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 wxEND_EVENT_TABLE()
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1", wxPoint(0,0), wxSize(1920,1080))
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1", wxPoint(0,0), wxSize(800,600))
 {
 	//maybe will pass for input?
 	std::cout<<"Please provide your name:\n";
@@ -28,7 +29,8 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1", wxPoint(0,0), wxSize(1920,108
 	SetMenuBar(menuBar);
 	//wxMenuItem *restartBtn = new wxMenuItem(fileMenu, wx
 	fileMenu->Append(wxID_ANY, _("&New game\tCtrl+R"));
-	
+	fileMenu->Append(wxID_ANY, _("&Highscores\tCtrl+H"));
+
 	//timer
 	m_timer.SetOwner(this);
 	Bind(wxEVT_TIMER, &cMain::OnTimer, this, m_timer.GetId());

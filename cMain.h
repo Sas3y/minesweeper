@@ -3,8 +3,9 @@
 #include "wx/wx.h"
 #include <string>
 
-#define defaultWidth 4 
-#define defaultHeight 3 
+#define defaultWidth 5
+#define defaultHeight 5 
+#define defMines 5
 
 class cMain : public wxFrame
 {
@@ -23,7 +24,7 @@ public:
 	int* mineloc = nullptr;
 	int minecount = 0;
 	std::string name="Unnamed";
-	int defaultMines=2;
+	int defaultMines=defMines;
 	
 	wxPanel *panel;
 	wxStaticText *timerText;
