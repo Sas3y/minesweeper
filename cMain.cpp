@@ -8,6 +8,8 @@
 //reset time for highscores
 
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
+EVT_MENU(9001, cMain::OnMenuNewGame)
+EVT_MENU(9002, cMain::OnMenuHighscores)
 wxEND_EVENT_TABLE()
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1", wxPoint(0,0), wxSize(800,600))
@@ -28,17 +30,17 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1", wxPoint(0,0), wxSize(800,600)
 	menuBar->Append(fileMenu, _("Options"));
 	SetMenuBar(menuBar);
 	//wxMenuItem *restartBtn = new wxMenuItem(fileMenu, wx
-	fileMenu->Append(wxID_ANY, _("&New game\tCtrl+R"));
-	fileMenu->Append(wxID_ANY, _("&Highscores\tCtrl+H"));
+	fileMenu->Append(9001, _("New game"));  //magic number
+	fileMenu->Append(9002, _("Highscores"));
 
 	//timer
 	m_timer.SetOwner(this);
 	Bind(wxEVT_TIMER, &cMain::OnTimer, this, m_timer.GetId());
 	wxStatusBar *statusBar = CreateStatusBar(2); //2 = size
 	
-	//minecounter init
+	//status init
 	SetStatusText(_("Mines left: "+std::to_string(cMain::defaultMines)), 1);
-	
+	SetStatusText(_("Time: "+std::to_string(0)+" s"));
 	
 	//creates button grid
 	btn = new wxButton*[cMain::nFieldWidth * cMain::nFieldHeight]; 
@@ -106,8 +108,7 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 			}
 		}
 		
-		
-		
+
 		m_timer.Start(1000);
 		
 		cMain::bFirstClick = false;
@@ -117,9 +118,10 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 	
 	if(cMain::nField[y * cMain::nFieldWidth + x] == -1 && cMain::mineloc[y * cMain::nFieldWidth + x] != 1)	//if mine is hit
 	{
-		wxMessageBox("There was a mine");
-		cMain::bFirstClick = true;  //reset click (for gen)
-		
+		m_timer.Stop();
+		wxMessageBox("You lost -\nthere was a mine there");
+		//reset click (for gen)
+		cMain::reset();
 		for(int x=0;x<cMain::nFieldWidth;x++) //reset board
 		{
 			for(int y=0;y<cMain::nFieldHeight;y++)
@@ -162,16 +164,19 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 	
 	if(minecount==0)
 	{
+		m_timer.Stop();
 		wxMessageBox(wxString::Format("You Won!\nYour time was: %d s.", time));
+
+		
 		
 		std::ofstream highscores;
 		highscores.open("highscores.dat", std::ios_base::app);
 		//highscores<<"Player: "<<cMain::name<<", Dimensions:"<<nFieldWidth<<" x "<<nFieldHeight<<", Time: "<<time<<" s.\n";
-		highscores<<cMain::name<<' '<<nFieldWidth<<' '<<nFieldHeight<<' '<<time<<'\n';
+		highscores<<cMain::name<<' '<<nFieldWidth<<' '<<nFieldHeight<<' '<<defaultMines<<' '<<time<<'\n';
 		highscores.close();
 		
 		//reset //unneeded?
-		cMain::bFirstClick = true;
+		cMain::reset();
 		
 		for(int x=0;x<cMain::nFieldWidth;x++)
 		{
@@ -231,3 +236,24 @@ void cMain::OnTimer(wxTimerEvent &evt)
 	
 	evt.Skip();
 }
+
+void cMain::reset(){
+	cMain::bFirstClick = true;
+	time=0;
+	SetStatusText(_("Time: "+std::to_string(time)+" s"));
+}
+
+void cMain::OnMenuNewGame(wxCommandEvent &evt){
+	//cMain::reset();]
+	wxMessageBox(wxString::Format("NEWGAME"));
+}
+void cMain::OnMenuHighscores(wxCommandEvent &evt){
+	wxMessageBox(wxString::Format("Highscores for your dimensions and bombs:"));
+	std::ifstream highscoresR;
+	highscoresR.open("highscores.dat");
+	//NAME DIM1 DIM2 BOMBS TIME
+	
+	
+	
+}
+

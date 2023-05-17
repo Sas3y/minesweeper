@@ -34,4 +34,9 @@ public:
 	void rclick(wxMouseEvent &evt);
 	void OnTimer(wxTimerEvent &event);
 	wxDECLARE_EVENT_TABLE();  //to record clicks
+	
+	void OnMenuNewGame(wxCommandEvent &evt);
+	void OnMenuHighscores(wxCommandEvent &evt);
+	
+	void reset();
 };
