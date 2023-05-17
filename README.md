@@ -10,6 +10,7 @@ Bugfixing<br>
 Divide into multiple files (last)<br>
 ?Click to reveal on number<br>
 </p>
+
 ### DONE:
 <p>Working buttons:<br>
 	-Reset<br>
