@@ -4,24 +4,29 @@
 
 ### TODO:
 <p>
-Input (for init) (set acceptable ranges) (console temporary or permanent? - maybe already enough)<br>
-Bot (decide which variant)<br>
-Bugfixing<br>
-Divide into multiple files (last)<br>
+Bugfixing (a lot)<br>
 ?Click to reveal on number<br>
 </p>
 
 ### DONE:
-<p>Working buttons:<br>
+<p>
+Working buttons:<br>
 	-Reset<br>
 	-Highscores(+include mine amount)<br>
+Input<br>
+Bot<br>
 Timer(+reset when reset)<br>
 Reveal surrounding 0's (no manual clicks)<br>
 Endgame screen<br>
+
+Divide into multiple files (last)<br>
 </p>
 
 
 ### Extra details
-<p>b.sh for easier compilation<br>
-highscores is just a demo for future (unimportant)<br>
+<p>
+wxwidgets needed to compile<br>
+- b.sh for easier compilation<br>
+highscores file to save past highscores<br>
+bot difficulty is accessible from header file only - set to 30secs<br>
 </p>
