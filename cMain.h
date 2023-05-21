@@ -6,7 +6,7 @@
 #define defaultWidth 5
 #define defaultHeight 5 
 #define defMines 5
-#define defDiff 10
+#define defDiff 30
 
 class cMain : public wxFrame
 {

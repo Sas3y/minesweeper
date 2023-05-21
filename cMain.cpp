@@ -2,83 +2,6 @@
 #include <string>
 #include <fstream>
 
-#define inputOn 1
-
-//dont confuse minecount with mine_count
-
-//gameplay bug(feature): set minecount to 0 and press any (even flagged) tile to win
-//
-
-wxBEGIN_EVENT_TABLE(cMain, wxFrame)
-EVT_MENU(9001, cMain::OnMenuNewGame)
-EVT_MENU(9002, cMain::OnMenuHighscores)
-wxEND_EVENT_TABLE()
-
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1.1", wxPoint(0,0), wxSize(800,600))
-{
-	//maybe will pass for input?
-	if(inputOn){
-	
-	std::cout<<"Please provide your name:\n";
-	std::cin>>cMain::name;
-	std::cout<<"Please provide the dimensions you want to play with (From 3-20):\n";
-	std::cin>>nFieldWidth>>nFieldHeight;
-	std::cout<<"Please provide the amount of mines you want to play with:\n";
-	std::cin>>cMain::defaultMines;
-	
-	}
-	//Options
-	wxMenuBar *menuBar = new wxMenuBar();
-	wxMenu *fileMenu = new wxMenu();
-	menuBar->Append(fileMenu, _("Menu"));
-	SetMenuBar(menuBar);
-	//wxMenuItem *restartBtn = new wxMenuItem(fileMenu, wx
-	fileMenu->Append(9001, _("New game"));  //magic number
-	fileMenu->Append(9002, _("Highscores"));
-
-	//timer
-	m_timer.SetOwner(this);
-	Bind(wxEVT_TIMER, &cMain::OnTimer, this, m_timer.GetId());
-	wxStatusBar *statusBar = CreateStatusBar(2); //2 = size
-	
-	//status init
-	SetStatusText(_("Mines left: "+std::to_string(cMain::defaultMines)), 1);
-	SetStatusText(_("Time: "+std::to_string(0)+" s"));
-	
-	//creates button grid
-	btn = new wxButton*[cMain::nFieldWidth * cMain::nFieldHeight]; 
-	
-	wxGridSizer *grid = new wxGridSizer(cMain::nFieldWidth, cMain::nFieldHeight, 0, 0);  //generates a sizer which corrects positions of buttons
-	
-	
-	cMain::nField = new int[cMain::nFieldWidth * cMain:: nFieldHeight];  //board; -1 is bomb, 0 is not
-	cMain::mineloc = new int[cMain::nFieldWidth * cMain:: nFieldHeight];  //flag positions
-	
-	wxFont font(24, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
-	
-	for(int x=0;x<cMain::nFieldWidth;x++)
-	{
-		for(int y=0;y<cMain::nFieldHeight;y++)
-		{
-			btn[y * (cMain::nFieldWidth) + x] = new wxButton(this, 10000 + (y * (cMain::nFieldWidth) + x));  //10000 is magic id
-			
-			btn[y * (cMain::nFieldWidth) + x]->SetFont(font);
-			
-			grid -> Add(btn[y * (cMain::nFieldWidth) + x], 1, wxEXPAND | wxALL);  //adjusts button size
-			btn[y * cMain::nFieldWidth + x] -> Bind(wxEVT_COMMAND_BUTTON_CLICKED, &cMain::OnButtonClicked, this);
-			btn[y * cMain::nFieldWidth + x] -> Bind(wxEVT_RIGHT_DOWN, &cMain::rclick, this);
-			cMain::nField[y * cMain::nFieldWidth + x] = 0;
-			cMain::mineloc[y * cMain::nFieldWidth + x] = 0;
-		}
-	}
-	
-	
-	this -> SetSizer(grid);
-	grid -> Layout();
-	
-}
-
-
 cMain::~cMain()
 {
 	delete[]btn;
@@ -130,32 +53,7 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 		
 		revealTile(x,y);
 		//counts neighboring mines
-		//moved code below to revealTile
-		/*
-		int mine_count = 0;
-		
-		for(int i=-1; i<2; i++)
-		{
-			for(int j = -1; j<2; j++)
-			{
-				if(x + i >= 0 && x + i < cMain::nFieldWidth && y + j >=0 && y + j < cMain::nFieldHeight) //not to search out of board
-				{
-					if(cMain::nField[(y + j) * cMain::nFieldWidth + (x + i)] == -1)
-					{
-						mine_count++;
-						
-					}
-				}
-			}
-		}
-		
-		if(cMain::mineloc[y * cMain::nFieldWidth + x] != 1)
-		{
-			btn[y * cMain::nFieldWidth + x] -> SetLabel(std::to_string(mine_count)); //how many mines
-			
-			btn[y*cMain::nFieldWidth + x] -> Enable(false);//disables clicking the button
-		}
-		*/
+		//moved code to revealTile
 		
 		
 	}
@@ -164,8 +62,6 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 	{
 		m_timer.Stop();
 		wxMessageBox(wxString::Format("You Won!\nYour time was: %d s.", time));
-
-		
 		
 		std::ofstream highscores;
 		highscores.open("highscores.dat", std::ios_base::app);
@@ -173,20 +69,6 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 		highscores<<cMain::name<<' '<<nFieldWidth<<' '<<nFieldHeight<<' '<<defaultMines<<' '<<time<<'\n';
 		highscores.close();
 		
-		//reset //unneeded
-		/*
-		cMain::reset();
-		
-		for(int x=0;x<cMain::nFieldWidth;x++)
-		{
-			for(int y=0;y<cMain::nFieldHeight;y++)
-			{
-				cMain::nField[y * cMain::nFieldWidth + x] = 0;
-				btn[y * cMain::nFieldWidth + x] -> SetLabel("");
-				btn[y * cMain::nFieldWidth + x] -> Enable(true);
-				cMain::mineloc[y * cMain::nFieldWidth + x] = 0;
-			}
-		}*/
 	}
 	
 	//update minecount
@@ -232,7 +114,6 @@ void cMain::OnTimer(wxTimerEvent &evt)
 	time++;
 	
 	if(time%cMain::difficulty==0){
-	std::cout<<"TestBot"<<std::endl;
 	cMain::botPlace();
 	}
 	
@@ -320,16 +201,50 @@ void cMain::OnMenuHighscores(wxCommandEvent &evt){
 }
 
 void cMain::botPlace(){
-	bool botTry=1;
-	//bot here (for future)
+	
+	int tries=100; //magic number
+	bool isClosed=1;
+	while (tries!=0){
+	
+		//generates random coords
+		int rx = rand() % cMain::nFieldWidth;
+		int ry = rand() % cMain::nFieldHeight;
+		
+		//checks if surrounding is all enabled buttons
+		for(int i=-1; i<2; i++){
+		for(int j=-1; j<2; j++){
+			if((rx+i) >= 0 && (rx+i) < cMain::nFieldWidth && (ry+j) >= 0 && (ry+j) < cMain::nFieldHeight){
+				if(!(btn[(ry+j)*cMain::nFieldWidth+(rx+i)]->IsEnabled())){isClosed=0;} //BUGGED (5x8)
+				//std::cout<<"COORDS: "<<rx+i<<" x "<<ry+j<<std::endl;
+			}
+		}
+		}
+		
+			
+		//places a mine in an undiscovered (by sides) tile
+		if(isClosed){
+			if(cMain::nField[ry * cMain::nFieldWidth + rx] == 0)//if mine isnt there
+			{
+				
+				cMain::nField[ry * cMain::nFieldWidth + rx] = -1;
+				cMain::minecount++;
+				SetStatusText(_("Mines left: "+std::to_string(minecount)), 1); //update minecount statusbar
+				
+				//FOR TESTS TESTING
+				std::cout<<"Bot placed on "<<ry * cMain::nFieldWidth+rx<<std::endl;
+				
+				break;
+			}
+		}else{tries--;isClosed=1;}
+	}
+	
 }
 
 void cMain::reveal0(int x, int y){
 
-	//gl understanding this lmao
-	bool is0=1;
-	int tempx, tempy;
-	for(int a=-1; a<2; a++){
+	bool is0=1; //bool if the tile is 0
+	int tempx, tempy; //for easier reading
+	for(int a=-1; a<2; a++){ //2fors search surrounding
 	for(int b=-1; b<2; b++){
 		tempx = x + a;
 		tempy = y + b;
@@ -434,22 +349,7 @@ void cMain::showEnd(){
 	m_timer.Stop();
 	wxMessageBox("You lost -\nthere was a mine there");
 	
-	
-	
-	/*
-	//reset click (for gen)
-	cMain::reset();
-	for(int x=0;x<cMain::nFieldWidth;x++) //reset board
-	{
-		for(int y=0;y<cMain::nFieldHeight;y++)
-		{
-			cMain::nField[y * cMain::nFieldWidth + x] = 0;
-			btn[y * cMain::nFieldWidth + x] -> SetLabel(""); 
-			btn[y * cMain::nFieldWidth + x] -> Enable(true);
-			cMain::mineloc[y * cMain::nFieldWidth + x] = 0;
-		}
-	}
-	*/
+	//moved resetting to New Game button
 }
 
 
