@@ -6,7 +6,7 @@
 #define defaultWidth 5
 #define defaultHeight 5 
 #define defMines 5
-#define defDiff 30
+#define defDiff 15
 
 class cMain : public wxFrame
 {
@@ -15,7 +15,7 @@ public:
 	~cMain();
 	
 public:
-	int time=0;
+	int cTimer=0;
 	wxTimer m_timer;
 	int nFieldWidth = defaultWidth;
 	int nFieldHeight = defaultHeight;
