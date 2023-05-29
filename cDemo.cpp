@@ -1,5 +1,6 @@
 #include <string>
 #include <fstream>
+#include <ctime> //for date
 #include "wx/wx.h"
 #include "cMain.h"
 
@@ -22,6 +23,8 @@ wxEND_EVENT_TABLE()
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1.1", wxPoint(0,0), wxSize(800,600))
 {
+
+	
 	if(inputOn){
 	bool invalid=1;
 	

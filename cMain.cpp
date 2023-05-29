@@ -1,6 +1,7 @@
 #include "cMain.h"
 #include <string>
 #include <fstream>
+#include <ctime>
 
 cMain::~cMain()
 {
@@ -61,12 +62,19 @@ void cMain::OnButtonClicked(wxCommandEvent &evt)
 	if(minecount==0)
 	{
 		m_timer.Stop();
-		wxMessageBox(wxString::Format("You Won!\nYour time was: %d s.", time));
+		wxMessageBox(wxString::Format("You Won!\nYour time was: %d s.", cTimer));
 		
 		std::ofstream highscores;
 		highscores.open("highscores.dat", std::ios_base::app);
 		//highscores<<"Player: "<<cMain::name<<", Dimensions:"<<nFieldWidth<<" x "<<nFieldHeight<<", Time: "<<time<<" s.\n";
-		highscores<<cMain::name<<' '<<nFieldWidth<<' '<<nFieldHeight<<' '<<defaultMines<<' '<<time<<'\n';
+		
+		//date (gpt code snippet)
+		std::time_t now = std::time(nullptr);
+		std::tm* localTime = std::localtime(&now);
+		char buffer[11]; // Buffer to store the formatted date
+		std::strftime(buffer, sizeof(buffer), "%Y-%m-%d", localTime); //eg 2023-05-29
+		
+		highscores<<cMain::name<<' '<<nFieldWidth<<' '<<nFieldHeight<<' '<<defaultMines<<' '<<cTimer<<' '<<buffer<<'\n';
 		highscores.close();
 		
 	}
@@ -85,15 +93,17 @@ void cMain::rclick(wxMouseEvent &evt)	//flag a mine
 	
 	
 	
-	if(cMain::mineloc[y * cMain::nFieldWidth + x] == 0) //flag //NEEDS MORE IFS FOR BUGFIXING
+	if(cMain::mineloc[y * cMain::nFieldWidth + x] == 0) //flag //NEEDS MORE IFS FOR BUGFIXING //-no, it will be a feature
 	{
 		cMain::mineloc[y * cMain::nFieldWidth + x] = 1;
 		btn[y * cMain::nFieldWidth + x] -> SetLabel("F");
+		btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(255, 165, 0)); // Orange color
 	}
 	else //unflag
 	{
 		cMain::mineloc[y * cMain::nFieldWidth + x] = 0;
 		btn[y * cMain::nFieldWidth + x] -> SetLabel("");
+		//btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(170, 170, 170)); // Restore color //unneeded?
 	}
 	if(cMain::mineloc[y * cMain::nFieldWidth + x] == 1)  // && cMain::nField[y * cMain::nFieldWidth + x] == -1
 	{
@@ -111,21 +121,21 @@ void cMain::rclick(wxMouseEvent &evt)	//flag a mine
 
 void cMain::OnTimer(wxTimerEvent &evt)
 {
-	time++;
+	cTimer++;
 	
-	if(time%cMain::difficulty==0){
+	if(cTimer%cMain::difficulty==0){
 	cMain::botPlace();
 	}
 	
-	SetStatusText(_("Time: "+std::to_string(time)+" s"));
+	SetStatusText(_("Time: "+std::to_string(cTimer)+" s"));
 	
 	evt.Skip();
 }
 
 void cMain::reset(){
 	cMain::bFirstClick = true;
-	time=0;
-	SetStatusText(_("Time: "+std::to_string(time)+" s"));
+	cTimer=0;
+	SetStatusText(_("Time: "+std::to_string(cTimer)+" s"));
 }
 
 void cMain::OnMenuNewGame(wxCommandEvent &evt){
@@ -137,7 +147,8 @@ void cMain::OnMenuNewGame(wxCommandEvent &evt){
 		for(int y=0;y<cMain::nFieldHeight;y++)
 		{
 			cMain::nField[y * cMain::nFieldWidth + x] = 0;
-			btn[y * cMain::nFieldWidth + x] -> SetLabel(""); 
+			btn[y * cMain::nFieldWidth + x] -> SetLabel("");
+			//btn[y * cMain::nFieldWidth + x] -> SetForegroundColour(wxColour(170, 170, 170)); //Dark grey //unneeded?
 			btn[y * cMain::nFieldWidth + x] -> Enable(true);
 			cMain::mineloc[y * cMain::nFieldWidth + x] = 0;
 		}
@@ -158,10 +169,10 @@ void cMain::OnMenuHighscores(wxCommandEvent &evt){
 	
 	//init best 3
 	int HSdim1, HSdim2, HSbombs;
-	std::string HSname1="-\n",HSname2="-\n",HSname3="-\n",HSname;
+	std::string HSname1="-\n",HSname2="-\n",HSname3="-\n",HSname, HSdate1="", HSdate2="", HSdate3="", HSdate;
 	int HStime1=999, HStime2=999, HStime3=999, HStime;
 	
-	while(hsR >> HSname >> HSdim1 >> HSdim2 >> HSbombs >> HStime){ //checks if not end of file
+	while(hsR >> HSname >> HSdim1 >> HSdim2 >> HSbombs >> HStime >> HSdate){ //checks if not end of file
 		//hsR>>HSname >> HSdim1 >> HSdim2 >> HSbombs >> HStime;
 		//TEST
 		//std::cout<<HSname<<HSdim1<<HSdim2<<HSbombs<<HStime<<std::endl;
@@ -171,16 +182,22 @@ void cMain::OnMenuHighscores(wxCommandEvent &evt){
 			HStime3=HStime2;
 			HStime2=HStime1;
 			HStime1=HStime;
+			HSdate3=HSdate2;
+			HSdate2=HSdate1;
+			HSdate1=HSdate;
 			HSname3=HSname2;
 			HSname2=HSname1;
 			HSname1=HSname;
 			}else if(HStime<HStime2){
 			HStime3=HStime2;
 			HStime2=HStime;
+			HSdate3=HSdate2;
+			HSdate2=HSdate;
 			HSname3=HSname2;
 			HSname2=HSname;
 			}else if(HStime<HStime3){
 			HStime3=HStime;
+			HSdate3=HSdate;
 			HSname3=HSname;
 			}
 		}
@@ -188,13 +205,13 @@ void cMain::OnMenuHighscores(wxCommandEvent &evt){
 	
 	//formatting strings before box for "simplicity"
 	if(HSname1!="-\n"){
-		HSname1="1) "+HSname1+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime1)+"\n";
+		HSname1="1) "+HSname1+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime1)+"s on "+HSdate1+"\n";
 	}
 	if(HSname2!="-\n"){
-		HSname2="2) "+HSname2+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime2)+"\n";
+		HSname2="2) "+HSname2+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime2)+"s on "+HSdate2+"\n";
 	}
 	if(HSname3!="-\n"){
-		HSname3="3) "+HSname3+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime3);
+		HSname3="3) "+HSname3+": "+std::to_string(cMain::nFieldWidth)+"x"+std::to_string(cMain::nFieldHeight)+" with "+std::to_string(cMain::defaultMines)+" bombs time: "+std::to_string(HStime3)+"s on "+HSdate3;
 	}else{HSname3="-";}//to remove \n
 	
 	wxMessageBox("Highscores for your dimensions and bombs:\n"+HSname1+HSname2+HSname3);
@@ -203,14 +220,16 @@ void cMain::OnMenuHighscores(wxCommandEvent &evt){
 void cMain::botPlace(){
 	
 	int tries=100; //magic number
-	bool isClosed=1;
+	//bool isClosed=0;
 	while (tries!=0){
 	
 		//generates random coords
-		int rx = rand() % cMain::nFieldWidth;
+		int rx = rand() % cMain::nFieldWidth; //I think I mixed them. whoops :p
 		int ry = rand() % cMain::nFieldHeight;
 		
+		//Patch 1.2 - Can place mine on any tile unoccupied by bomb
 		//checks if surrounding is all enabled buttons
+		/*
 		for(int i=-1; i<2; i++){
 		for(int j=-1; j<2; j++){
 			if((rx+i) >= 0 && (rx+i) < cMain::nFieldWidth && (ry+j) >= 0 && (ry+j) < cMain::nFieldHeight){
@@ -219,24 +238,35 @@ void cMain::botPlace(){
 			}
 		}
 		}
+		*/
 		
+
+		if(cMain::nField[ry * cMain::nFieldWidth + rx] == 0)//if mine isnt there
+		{
 			
-		//places a mine in an undiscovered (by sides) tile
-		if(isClosed){
-			if(cMain::nField[ry * cMain::nFieldWidth + rx] == 0)//if mine isnt there
-			{
-				
-				cMain::nField[ry * cMain::nFieldWidth + rx] = -1;
-				cMain::minecount++;
-				SetStatusText(_("Mines left: "+std::to_string(minecount)), 1); //update minecount statusbar
-				
-				//FOR TESTS TESTING
-				std::cout<<"Bot placed on "<<ry * cMain::nFieldWidth+rx<<std::endl;
-				
-				break;
+			for(int i=-1; i<2; i++){
+			for(int j=-1; j<2; j++){
+				if((rx+i) >= 0 && (rx+i) < cMain::nFieldWidth && (ry+j) >= 0 && (ry+j) < cMain::nFieldHeight){
+					btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetLabel("");
+					//btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetForegroundColour(wxColour(170, 170, 170));//unneeded?
+					btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> Enable(true);
+				}
 			}
-		}else{tries--;isClosed=1;}
+			}
+			
+			cMain::nField[ry * cMain::nFieldWidth + rx] = -1;
+			cMain::minecount++;
+			SetStatusText(_("Mines left: "+std::to_string(minecount)), 1); //update minecount statusbar
+			
+			//FOR TESTS TESTING
+			std::cout<<"Bot placed on "<<ry+1<<'x'<<rx+1<<std::endl;
+			
+			break;
+		}else{tries--;/*isClosed=1;*/}
+		
 	}
+	//FOR TESTS TESTING
+	if(tries==0){std::cout<<"Couldn't find Enabled tile"<<std::endl;}
 	
 }
 
@@ -264,7 +294,7 @@ void cMain::reveal0(int x, int y){
 					
 					tempx = x + a;
 					tempy = y + b;
-					btn[tempy * cMain::nFieldWidth + tempx] -> SetLabel(std::to_string(0)); //how many mines
+					//btn[tempy * cMain::nFieldWidth + tempx] -> SetLabel(std::to_string(0)); //how many mines (always 0) //unneeded?
 					btn[tempy * cMain::nFieldWidth + tempx] -> Enable(false);//disables clicking the button
 					cMain::reveal0(tempx,tempy); //RECURSIVE!
 					
@@ -307,6 +337,20 @@ void cMain::revealTile(int x, int y){
 	if(cMain::mineloc[y * cMain::nFieldWidth + x] != 1)
 	{
 		btn[y * cMain::nFieldWidth + x] -> SetLabel(std::to_string(mine_count)); //how many mines
+		if(mine_count==0){
+			btn[y * cMain::nFieldWidth + x] -> SetForegroundColour(wxColour(64, 64, 64)); //darker
+		} else if (mine_count == 1) {
+		    btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(100, 149, 237)); // Cornflower blue
+		} else if (mine_count == 2) {
+		    btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(144, 238, 144)); // Light green
+		} else if (mine_count == 3) {
+		    btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(255, 105, 97)); // Salmon
+		} else if (mine_count == 4) {
+		    btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(41, 89, 154)); // Dark Steel Blue
+		} else {
+		    btn[y * cMain::nFieldWidth + x]->SetForegroundColour(wxColour(178, 34, 34)); // Firebrick
+		}
+
 		
 		btn[y*cMain::nFieldWidth + x] -> Enable(false);//disables clicking the button
 	}
@@ -326,13 +370,18 @@ void cMain::showEnd(){
 			//bomb
 			if(cMain::mineloc[y * cMain::nFieldWidth + x]==0){
 			btn[y * cMain::nFieldWidth + x] -> SetLabel("x"); //missed bomb
-			}else{btn[y * cMain::nFieldWidth + x] -> SetLabel("F");}
+			btn[y * cMain::nFieldWidth + x] -> SetForegroundColour(wxColour(255, 40, 40)); // Red color
+			}else{
+			btn[y * cMain::nFieldWidth + x] -> SetLabel("F");
+			btn[y * cMain::nFieldWidth + x] -> SetForegroundColour(wxColour(20, 128, 20)); // Medium green
+			}
 		}else{
 			if(cMain::mineloc[y * cMain::nFieldWidth + x]==0){
 				//no bomb
 				cMain::revealTile(x,y);
 			}else{
 			btn[y * cMain::nFieldWidth + x] -> SetLabel("f");
+			btn[y * cMain::nFieldWidth + x] -> SetForegroundColour(wxColour(255, 40, 40)); // Red color
 			btn[y * cMain::nFieldWidth + x] -> Enable(false);
 			}
 			
