@@ -1,6 +1,6 @@
 #include <string>
 #include <fstream>
-#include <ctime> //for date
+#include <ctime> //unneeded?
 #include "wx/wx.h"
 #include "cMain.h"
 
@@ -21,10 +21,8 @@ EVT_MENU(9001, cMain::OnMenuNewGame)
 EVT_MENU(9002, cMain::OnMenuHighscores)
 wxEND_EVENT_TABLE()
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1.1", wxPoint(0,0), wxSize(800,600))
-{
-
-	
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "MS1.2", wxPoint(0,0), wxSize(800,600))
+{	
 	if(inputOn){
 	bool invalid=1;
 	
