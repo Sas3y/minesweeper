@@ -247,9 +247,24 @@ void cMain::botPlace(){
 			for(int i=-1; i<2; i++){
 			for(int j=-1; j<2; j++){
 				if((rx+i) >= 0 && (rx+i) < cMain::nFieldWidth && (ry+j) >= 0 && (ry+j) < cMain::nFieldHeight){
-					btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetLabel("");
+					//small semi-fix
+					if(i==0 && j==0){
+						btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetLabel("");
+						btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> Enable(true);
+					}else{
+						if(btn[(ry + j) * cMain::nFieldWidth + (rx + i)]->GetLabel().ToStdString() == "0"){ //doesnt fix the problem completely (corner 1's should be 2)
+							btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetLabel("1");
+							btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetForegroundColour(wxColour(100, 149, 237)); // Cornflower blue
+						}else{
+							if (btn[(ry + j) * cMain::nFieldWidth + (rx + i)]->GetLabel() == "F"){
+								//if flagged, stays flagged (doesnt do anything?)
+							}else{
+								btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetLabel("");
+								btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> Enable(true);
+							}
+						}
+					}
 					//btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> SetForegroundColour(wxColour(170, 170, 170));//unneeded?
-					btn[(ry+j)*cMain::nFieldWidth+(rx+i)] -> Enable(true);
 				}
 			}
 			}
